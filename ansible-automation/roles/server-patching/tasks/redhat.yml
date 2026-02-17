@@ -1,0 +1,37 @@
+---
+- name: Update yum cache (RedHat/CentOS)
+  ansible.builtin.yum:
+    update_cache: true
+  when: patching_update_cache
+
+- name: Upgrade all packages (RedHat/CentOS)
+  ansible.builtin.yum:
+    name: "*"
+    state: latest
+    exclude: "{{ patching_exclude_packages | join(',') }}"
+  when: not patching_security_only
+  register: yum_upgrade_result
+
+- name: Install security updates only (RedHat/CentOS)
+  ansible.builtin.yum:
+    name: "*"
+    state: latest
+    security: true
+    exclude: "{{ patching_exclude_packages | join(',') }}"
+  when: patching_security_only
+  register: yum_security_result
+
+- name: Remove unused dependencies (RedHat/CentOS)
+  ansible.builtin.yum:
+    autoremove: true
+  when: patching_autoremove
+
+- name: Clean yum cache (RedHat/CentOS)
+  ansible.builtin.command: yum clean all
+  when: patching_clean_cache
+  changed_when: true
+
+- name: Display upgrade summary (RedHat/CentOS)
+  ansible.builtin.debug:
+    msg: "Yum update completed"
+  when: yum_upgrade_result is defined or yum_security_result is defined

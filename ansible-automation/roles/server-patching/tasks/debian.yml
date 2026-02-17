@@ -1,0 +1,36 @@
+---
+- name: Update apt cache (Debian/Ubuntu)
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  when: patching_update_cache
+
+- name: Upgrade all packages (Debian/Ubuntu)
+  ansible.builtin.apt:
+    upgrade: "{{ patching_upgrade_type }}"
+    autoremove: "{{ patching_autoremove }}"
+  when: not patching_security_only
+  register: apt_upgrade_result
+
+- name: Install security updates only (Debian/Ubuntu)
+  ansible.builtin.apt:
+    upgrade: dist
+    default_release: "{{ ansible_distribution_release }}-security"
+  when: patching_security_only
+  register: apt_security_result
+
+- name: Remove unused dependencies (Debian/Ubuntu)
+  ansible.builtin.apt:
+    autoremove: true
+    purge: true
+  when: patching_autoremove
+
+- name: Clean apt cache (Debian/Ubuntu)
+  ansible.builtin.apt:
+    autoclean: true
+  when: patching_clean_cache
+
+- name: Display upgrade summary (Debian/Ubuntu)
+  ansible.builtin.debug:
+    msg: "Packages upgraded: {{ apt_upgrade_result.stdout_lines | default([]) | length }} changes"
+  when: apt_upgrade_result is defined

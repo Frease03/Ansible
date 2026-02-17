@@ -1,0 +1,36 @@
+---
+- name: Install Docker Compose plugin (recommended)
+  when: not docker_compose_standalone
+  block:
+    - name: Install Docker Compose plugin (Debian/Ubuntu)
+      ansible.builtin.apt:
+        name: docker-compose-plugin
+        state: present
+        update_cache: true
+      when: ansible_os_family == "Debian"
+
+    - name: Install Docker Compose plugin (RedHat/CentOS)
+      ansible.builtin.yum:
+        name: docker-compose-plugin
+        state: present
+      when: ansible_os_family == "RedHat"
+
+- name: Install Docker Compose standalone binary
+  when: docker_compose_standalone
+  block:
+    - name: Download Docker Compose binary
+      ansible.builtin.get_url:
+        url: "{{ docker_compose_url }}"
+        dest: "{{ docker_compose_path }}"
+        mode: '0755'
+        owner: root
+        group: root
+
+    - name: Verify Docker Compose installation
+      ansible.builtin.command: "{{ docker_compose_path }} --version"
+      register: compose_version
+      changed_when: false
+
+    - name: Display Docker Compose version
+      ansible.builtin.debug:
+        msg: "Docker Compose version: {{ compose_version.stdout }}"

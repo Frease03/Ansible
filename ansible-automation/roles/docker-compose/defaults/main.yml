@@ -1,0 +1,8 @@
+---
+# Docker Compose installation defaults
+docker_compose_version: "2.24.5"
+docker_compose_url: "https://github.com/docker/compose/releases/download/v{{ docker_compose_version }}/docker-compose-{{ ansible_system }}-{{ ansible_architecture }}"
+docker_compose_path: "/usr/local/bin/docker-compose"
+
+# Whether to use plugin version (recommended) or standalone binary
+docker_compose_standalone: false

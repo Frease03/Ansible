@@ -1,0 +1,22 @@
+---
+- name: Install required packages for Docker (RedHat/CentOS)
+  ansible.builtin.yum:
+    name:
+      - yum-utils
+      - device-mapper-persistent-data
+      - lvm2
+    state: present
+
+- name: Add Docker repository (RedHat/CentOS)
+  ansible.builtin.yum_repository:
+    name: docker-ce
+    description: Docker CE Stable Repository
+    baseurl: "https://download.docker.com/linux/centos/$releasever/$basearch/stable"
+    gpgkey: "https://download.docker.com/linux/centos/gpg"
+    gpgcheck: true
+    enabled: true
+
+- name: Install Docker packages (RedHat/CentOS)
+  ansible.builtin.yum:
+    name: "{{ docker_packages }}"
+    state: present

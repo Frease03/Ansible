@@ -1,0 +1,38 @@
+---
+- name: Run pre-patching commands
+  ansible.builtin.command: "{{ item }}"
+  loop: "{{ patching_pre_commands }}"
+  when: patching_pre_commands | length > 0
+  changed_when: true
+
+- name: Include OS-specific patching tasks
+  include_tasks: "{{ ansible_os_family | lower }}.yml"
+
+- name: Run post-patching commands
+  ansible.builtin.command: "{{ item }}"
+  loop: "{{ patching_post_commands }}"
+  when: patching_post_commands | length > 0
+  changed_when: true
+
+- name: Check if reboot is required (Debian/Ubuntu)
+  ansible.builtin.stat:
+    path: /var/run/reboot-required
+  register: reboot_required_file
+  when: ansible_os_family == "Debian"
+
+- name: Check if reboot is required (RedHat/CentOS)
+  ansible.builtin.command: needs-restarting -r
+  register: reboot_required_rhel
+  failed_when: false
+  changed_when: false
+  when: ansible_os_family == "RedHat"
+
+- name: Reboot server if required
+  ansible.builtin.reboot:
+    msg: "{{ patching_reboot_msg }}"
+    reboot_timeout: "{{ patching_reboot_timeout }}"
+  when: >
+    patching_reboot_enabled and
+    ((ansible_os_family == "Debian" and reboot_required_file.stat.exists | default(false)) or
+     (ansible_os_family == "RedHat" and reboot_required_rhel.rc | default(0) == 1))
+  notify: Wait for server

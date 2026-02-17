@@ -1,0 +1,19 @@
+---
+- name: Server Patching Playbook
+  hosts: all
+  become: true
+  gather_facts: true
+  serial: "{{ patching_serial | default('25%') }}"
+
+  pre_tasks:
+    - name: Display patching start message
+      ansible.builtin.debug:
+        msg: "Starting patching on {{ inventory_hostname }}"
+
+  roles:
+    - role: server-patching
+
+  post_tasks:
+    - name: Display patching completion message
+      ansible.builtin.debug:
+        msg: "Patching completed on {{ inventory_hostname }}"

@@ -1,0 +1,27 @@
+---
+- name: Full Server Setup - Patching and Docker Installation
+  hosts: docker_hosts
+  become: true
+  gather_facts: true
+
+  pre_tasks:
+    - name: Display setup start message
+      ansible.builtin.debug:
+        msg: "Starting full setup on {{ inventory_hostname }}"
+
+  roles:
+    - role: server-patching
+      vars:
+        patching_reboot_enabled: true
+    - role: docker
+    - role: docker-compose
+
+  post_tasks:
+    - name: Verify Docker installation
+      ansible.builtin.command: docker --version
+      register: docker_version
+      changed_when: false
+
+    - name: Display Docker version
+      ansible.builtin.debug:
+        msg: "Docker installed: {{ docker_version.stdout }}"

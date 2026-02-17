@@ -1,0 +1,23 @@
+---
+# Server patching defaults
+patching_reboot_enabled: true
+patching_reboot_timeout: 600
+patching_reboot_msg: "System reboot initiated by Ansible patching"
+
+# Update behavior
+patching_update_cache: true
+patching_upgrade_type: "full"  # Options: full, safe, dist (Debian) / minimal, full (RedHat)
+
+# Security updates only
+patching_security_only: false
+
+# Packages to exclude from updates
+patching_exclude_packages: []
+
+# Pre and post patching commands
+patching_pre_commands: []
+patching_post_commands: []
+
+# Clean up old packages
+patching_autoremove: true
+patching_clean_cache: true
